@@ -1,0 +1,179 @@
+---
+title: "Problem_Set_2"
+author: "Colin Speer"
+date: "2024-01-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(naniar)
+library(tidyr)
+library(stringr)
+library(dplyr)
+```
+
+```{r data one}
+
+star_wars_one <- read.delim("star_wars_data.1.tsv", header = TRUE, sep = "\t")
+
+print(star_wars_one)
+
+```
+
+```{r data cleaning}
+
+star_wars_one <- replace_with_na(star_wars_one, replace = list(name="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(height="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(mass="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(hair_color="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(skin_color="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(eye_color="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(birth_year="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(sex="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(gender="unknown"))
+star_wars_one <- replace_with_na(star_wars_one, replace = list(homeworld_species="unknown"))
+
+(star_wars_one)
+
+```
+
+```{r question_one}
+
+sum(is.na(star_wars_one))
+
+
+```
+
+
+```{r clean last column}
+
+star_wars_one <- separate(star_wars_one, homeworld_species, into = c("homeworld", "species"), sep = "_")
+
+print(star_wars_one)
+
+```
+
+```{r question_two}
+
+print(sum(star_wars_one$species == "Droid" | star_wars_one$species == "Ewok"))
+
+```
+
+```{r question_three}
+
+print(length(unique(star_wars_one$homeworld[star_wars_one$homeworld != "NA"])))
+
+```
+
+```{r edit the mass column}
+
+star_wars_one$mass <- as.numeric(star_wars_one$mass)
+
+```
+
+```{r question_four}
+
+print(median(star_wars_one$mass, na.rm = TRUE))
+
+```
+
+```{r data two}
+
+two_star_wars <- read.delim("star_wars_data.2.txt", header = TRUE, sep = ",")
+
+print(two_star_wars)
+
+```
+
+```{r edit star wars data 2}
+
+second <- separate(two_star_wars, films, into = c("films", "second_film"), sep = "AND", extra = "merge", fill = "right")
+
+print(second)
+
+third <- separate(second, second_film, into = c("second_film", "other_films"), sep = "AND", extra = "merge", fill = "right")
+
+print(third)
+
+two_star_wars$second_film <- third$second_film
+
+print(two_star_wars)
+
+```
+
+```{r question_five}
+
+two_star_wars$second_film <- trimws(two_star_wars$second_film)
+print(sum(two_star_wars$second_film == "Return of the Jedi", na.rm = TRUE))
+
+```
+
+```{r question_six}
+
+sum(is.na(two_star_wars$second_film))
+
+```
+
+```{r merge the datasets}
+
+merged_star_wars <- merge(star_wars_one, two_star_wars, by.x = "name", by.y = "names")
+
+print(merged_star_wars)
+
+```
+
+```{r question_seven}
+
+only_one_movie <- merged_star_wars[is.na(merged_star_wars$second_film), ]
+print(only_one_movie)
+
+multiple_movie <- merged_star_wars[!is.na(merged_star_wars$second_film), ]
+print(multiple_movie)
+
+one_movie_avg_height <- mean(only_one_movie$height, na.rm = TRUE)
+multiple_movie_avg_height <- mean(multiple_movie$height, na.rm = TRUE)
+
+if (one_movie_avg_height > multiple_movie_avg_height) {
+  print("Characters in 1 movie have a greater mean height")
+} else {
+  print("Characters in more than 1 movie have a greater mean height")
+}
+
+```
+
+```{r question_eight}
+
+only_humans <- merged_star_wars[merged_star_wars$species == "Human", ]
+print(only_humans)
+
+only_humans$second_film <- trimws(only_humans$second_film)
+print(sum(only_humans$second_film == "The Empire Strikes Back", na.rm = TRUE))
+
+```
+
+```{r question_nine}
+
+original_movies <- c("A New Hope", "The Empire Strikes Back", "Return of the Jedi")
+original_trilogy <- merged_star_wars[merged_star_wars$second_film %in% original_movies, ]
+original_trilogy$mass_height_ratio <- as.numeric(original_trilogy$mass) / as.numeric(original_trilogy$height)
+
+print(original_trilogy)
+
+sequel_movies <- c("The Phantom Menace", "Attack of the Clones", "Revenge of the Sith")
+sequel_trilogy <- merged_star_wars[merged_star_wars$second_film %in% sequel_movies, ]
+sequel_trilogy$mass_height_ratio <- as.numeric(sequel_trilogy$mass) / as.numeric(sequel_trilogy$height)
+
+print(sequel_trilogy)
+
+original_median <- median(original_trilogy$mass_height_ratio, na.rm = TRUE)
+sequel_median <- median(sequel_trilogy$mass_height_ratio, na.rm = TRUE)
+
+if (original_median < sequel_median) {
+  print("Characters whose second movie was in the original trilogy have a smaller median mass/height ratio")
+} else {
+  print("Characters whose second movie was in the sequel trilogy have a smaller median mass/height ratio")
+}
+
+
+```
