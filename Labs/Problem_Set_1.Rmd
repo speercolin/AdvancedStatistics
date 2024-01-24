@@ -1,0 +1,112 @@
+---
+title: "Problem Set 1"
+author: "Colin Speer"
+date: "2024-01-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+```
+
+# Sample data collected from the following paper: 
+### Inflammation and Antiviral Immune Response Associated With Severe Progression of COVID-19
+
+*Importing* the **sample** ***data***
+```{r data}
+
+sample <- read.table("GSE164805_series_matrix.txt", header = TRUE)
+
+head(sample)
+
+```
+
+Printing the number of rows in the sample
+```{r question two}
+
+print(nrow(sample))
+
+```
+Printing the number of columns in the sample
+```{r question three}
+
+print(ncol(sample))
+
+```
+Checking if our sample is stored as a data frame or matrix
+```{r question four}
+
+print(str(sample))
+
+```
+Checking for NAs in our sample
+```{r question five}
+
+if (any(is.na(sample))) {
+  print("There are NAs in our data")
+} else {
+  print("There are no NAs in our data")
+}
+
+```
+Checking if the **ID_REF** column is a factor
+```{r question six}
+
+if (is.factor(sample[["ID_REF"]])) {
+  print("The ID_REF column is a factor")
+} else {
+  print("The ID_REF column is not a factor")
+}
+
+```
+
+Setting the **ID_REF** column as a factor
+```{r question seven}
+
+sample[["ID_REF"]] <- factor(sample[["ID_REF"]])
+
+if (is.factor(sample[["ID_REF"]])) {
+  print("The ID_REF column is a factor")
+} else {
+  print("The ID_REF column is not a factor")
+}
+
+```
+
+Subsetting the data frame using *%in%*
+```{r subsetting data frame}
+
+genes <- c("ASHG19AP1B100028737V5", "ASHG19AP1B100017453V5", "ASHG19AP1B100004705V5")
+individuals <- c("ID_REF", "GSM5019817", "GSM5019827", "GSM5019828")
+
+subset_sample <- sample[sample$ID_REF %in% genes, individuals]
+
+print(subset_sample)
+
+```
+
+Calculating the mean expression across the three genes for **GSM5019817**
+```{r question eight}
+
+print(mean(subset_sample[["GSM5019817"]]))
+
+```
+
+Converting the subset data from **wide** to **long** format
+```{r wide to long}
+
+subset_long <- gather(subset_sample, key = "Sample", value = "Expression", -ID_REF, factor_key = TRUE)
+
+print(subset_long)
+
+```
+
+Counting how many observations in our subset data **GSM5019817**, have a gene expression value greater than 4
+```{r question nine}
+
+count <- sum(subset_long$Expression > 4, na.rm = TRUE)
+
+print(count)
+
+```
