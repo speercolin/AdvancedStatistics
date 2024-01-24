@@ -1,2 +1,2 @@
 # AdvancedStatistics
-Advanced statistics for genomics at Charlotte.
+Advanced Statistics for Genomics at Charlotte.
